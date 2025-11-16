@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Live Transactions</title>
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 20px;
+            }
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #4caf50;
+                color: white;
+            }
+            tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+            .new-transaction {
+                animation: highlight 2s;
+            }
+            @keyframes highlight {
+                from {
+                    background-color: yellow;
+                }
+                to {
+                    background-color: transparent;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Live Transactions (<span id="count">0</span>)</h1>
+        <p>Last update: <span id="last-update">-</span></p>
+
+        <div id="transactions-container">
+            <p>Loading transactions...</p>
+        </div>
+
+        <script>
+            let currentCount = 0;
+
+            function loadTransactions() {
+                fetch("/api/transactions")
+                    .then((response) => response.json())
+                    .then((data) => {
+                        // Обновляем счетчик
+                        document.getElementById("count").textContent =
+                            data.count;
+                        document.getElementById("last-update").textContent =
+                            new Date().toLocaleTimeString();
+
+                        // Если появились новые транзакции
+                        if (data.count > currentCount) {
+                            const newTransactionCount =
+                                data.count - currentCount;
+                            currentCount = data.count;
+                            updateTransactionsTable(
+                                data.transactions,
+                                newTransactionCount,
+                            );
+                        } else if (data.count < currentCount) {
+                            // На случай если транзакции были удалены
+                            currentCount = data.count;
+                            updateTransactionsTable(data.transactions, 0);
+                        }
+                    })
+                    .catch((error) => console.error("Error:", error));
+            }
+
+            function updateTransactionsTable(
+                transactions,
+                newTransactionCount,
+            ) {
+                const container = document.getElementById(
+                    "transactions-container",
+                );
+
+                if (transactions.length === 0) {
+                    container.innerHTML =
+                        "<p>No transactions received yet.</p>";
+                    return;
+                }
+
+                let html = `
+                    <table>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Amount</th>
+                            <th>Currency</th>
+                            <th>Status</th>
+                            <th>Received At</th>
+                        </tr>
+                `;
+
+                transactions.forEach((transaction, index) => {
+                    // Подсвечиваем первые newTransactionCount строк
+                    const isNew = index < newTransactionCount;
+                    const highlightClass = isNew ? "new-transaction" : "";
+
+                    html += `
+                        <tr class="${highlightClass}">
+                            <td>${transaction.id || ""}</td>
+                            <td>${Number(transaction.amount || 0).toFixed(2)}</td>
+                            <td>${transaction.currency || ""}</td>
+                            <td>${transaction.status || ""}</td>
+                            <td>${transaction.timestamp || ""}</td>
+                        </tr>
+                    `;
+                });
+
+                html += "</table>";
+                container.innerHTML = html;
+
+                // Показываем уведомление о новых транзакциях
+                if (newTransactionCount > 0) {
+                    console.log(
+                        `Подсвечено ${newTransactionCount} новых транзакций`,
+                    );
+                }
+            }
+
+            // Загружаем сразу при открытии страницы
+            loadTransactions();
+
+            // Обновляем каждые 2 секунды
+            setInterval(loadTransactions, 500);
+        </script>
+    </body>
+</html>
