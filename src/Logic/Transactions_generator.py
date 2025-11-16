@@ -1,3 +1,4 @@
+from sre_parse import parse
 import time
 import datetime
 
@@ -11,6 +12,9 @@ import json
 import logging
 
 from requests.exceptions import Timeout
+
+import argparse
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,7 +85,10 @@ class Generator:
         start_time = time.time()
         while time.time() - start_time <= duration:
             phase_start_time = time.time()
-            for x in range(self.tps):
+            dispersion = 0
+            if self.tps > 1:
+                dispersion = random.randint(0, self.tps//2) * random.choice([-1, 1])
+            for x in range(self.tps + dispersion):
                 self.send_transaction(self.generate_transaction())
             delay_time = 1 - (time.time() - phase_start_time)
             time.sleep(delay_time)
@@ -89,7 +96,15 @@ class Generator:
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    model = Generator("http://localhost:8000", transactions_per_second=1)
-    model.run()
+
+    parser = argparse.ArgumentParser(description="Transactions generator")
+    parser.add_argument('--rate', '-r', type=int, default=1, help='Transactions per second')
+    parser.add_argument('--duration', '-d', type=int, default=5, help='Generation duration in sec')
+
+    args = parser.parse_args()
+
+
+    model = Generator("http://localhost:8000", args.rate)
+    model.run(args.duration)
     # x = model.generate_transaction()
     # model.send_transaction(x)
