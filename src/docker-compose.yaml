@@ -1,10 +1,12 @@
-version: "3"
+version: "3.8"
 
 services:
     trafic:
-        build: ./Trafic
+        build: ./Traffic
         networks:
             - net_1
+        depends_on:
+            - api
 
     api:
         build: ./API
@@ -12,8 +14,7 @@ services:
             - 8000:8000
         networks:
             - net_1
-        depends_on:
-            - trafic
 
 networks:
     net_1:
+        driver: bridge
