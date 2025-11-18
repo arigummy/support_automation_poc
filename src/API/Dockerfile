@@ -1,10 +1,11 @@
 FROM python:3.9-slim
 
-RUN apt-get updata &&b apt-get install -y --no-install-recomended \
-    && rm -fr /var/lib/apt/lists/*
+RUN apt-get update || true && rm -fr /var/lib/apt/lists/*
 
-WORKDIR /API
+WORKDIR /app
 
-COPY ../../API/ /API
+COPY ./ /app
 
-RUN pip3 install --no-cahe-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+CMD [ "python3", "Flask_app.py" ]

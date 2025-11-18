@@ -77,7 +77,7 @@ class Generator:
             logger.error("Timeout connectiong to server")
             return False
         except Exception as e:
-            logger.errro(f"Other error: {str(e)}")
+            logger.error(f"Other error: {str(e)}")
             return False
 
 

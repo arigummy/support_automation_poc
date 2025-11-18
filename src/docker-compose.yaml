@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+    trafic:
+        build: ./Trafic
+        networks:
+            - net_1
+
+    api:
+        build: ./API
+        ports:
+            - 8000:8000
+        networks:
+            - net_1
+        depends_on:
+            - trafic
+
+networks:
+    net_1:
