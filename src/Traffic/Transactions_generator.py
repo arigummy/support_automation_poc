@@ -104,7 +104,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     time.sleep(3)
-    model = Generator("http://server:8000", args.rate)
+    model = Generator("http://api:8000", args.rate)
     model.run(args.duration)
     # x = model.generate_transaction()
     # model.send_transaction(x)

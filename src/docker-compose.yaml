@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
     trafic:
+        container_name: traffic_generator
         build: ./Traffic
         networks:
             - net_1
@@ -9,6 +10,7 @@ services:
             - api
 
     api:
+        container_name: api
         build: ./API
         ports:
             - 8000:8000
